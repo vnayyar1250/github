@@ -1,0 +1,1385 @@
+/**
+ * Fashion Hut Garments – Complete Solution
+ * - Public image gallery (everyone can see)
+ * - Admin login (phone + password) to add/remove images
+ * - AI chatbot (answers questions about the store)
+ * Include this script in any HTML page – no extra markup needed.
+ */
+(function() {
+  // ================================
+  // ADMIN CREDENTIALS (change as needed)
+  // ================================
+  const ADMIN_CREDENTIALS = {
+    phone: "7657932896",      // registered phone number
+    password: "Admin2025"     // admin password
+  };
+
+  // ================================
+  // INJECT GLOBAL STYLES
+  // ================================
+  function injectStyles() {
+    const style = document.createElement('style');
+    style.textContent = `
+      /* ---------- ADMIN & GALLERY STYLES ---------- */
+      .fh-admin-login, .fh-admin-panel, .fh-public-gallery {
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      }
+      .fh-public-gallery {
+        margin: 2rem auto;
+        max-width: 1400px;
+        padding: 0 1rem;
+      }
+      .fh-admin-login {
+        background: rgba(255,255,255,0.96);
+        border-radius: 2rem;
+        max-width: 500px;
+        margin: 2rem auto;
+        padding: 2rem;
+        box-shadow: 0 25px 45px -12px rgba(0,0,0,0.25);
+        border: 1px solid rgba(255,255,240,0.7);
+      }
+      .fh-admin-login h2 {
+        font-size: 1.8rem;
+        background: linear-gradient(135deg, #1f4e6e, #2b6fa0);
+        background-clip: text;
+        -webkit-background-clip: text;
+        color: transparent;
+        margin-bottom: 0.25rem;
+      }
+      .fh-input-group {
+        margin-bottom: 1.2rem;
+      }
+      .fh-input-group label {
+        display: block;
+        font-weight: 500;
+        font-size: 0.85rem;
+        margin-bottom: 0.3rem;
+        color: #1f3b4c;
+      }
+      .fh-input-group input {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border: 1px solid #cbdde9;
+        border-radius: 60px;
+        font-size: 1rem;
+      }
+      .fh-login-btn {
+        background: #1f547c;
+        width: 100%;
+        padding: 0.8rem;
+        border: none;
+        border-radius: 60px;
+        font-weight: 600;
+        color: white;
+        cursor: pointer;
+        margin-top: 0.5rem;
+      }
+      .fh-error {
+        color: #c74444;
+        background: #ffe8e8;
+        padding: 0.5rem 1rem;
+        border-radius: 50px;
+        font-size: 0.8rem;
+        text-align: center;
+        margin-top: 1rem;
+        display: none;
+      }
+      .fh-admin-panel {
+        display: none;
+        max-width: 1400px;
+        margin: 1rem auto;
+        padding: 1rem;
+      }
+      .fh-admin-badge {
+        background: #e9c46a;
+        display: inline-block;
+        padding: 0.2rem 1rem;
+        border-radius: 40px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: #3b2b1f;
+      }
+      .fh-logout-btn {
+        background: transparent;
+        border: 1px solid #b0c7db;
+        padding: 0.4rem 1rem;
+        border-radius: 50px;
+        cursor: pointer;
+        color: #2b6a8f;
+        margin-left: 1rem;
+      }
+      .fh-add-panels {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1.8rem;
+        justify-content: center;
+        margin: 1rem 0;
+      }
+      .fh-card-panel {
+        background: white;
+        border-radius: 28px;
+        box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+        padding: 1.5rem;
+        flex: 1;
+        min-width: 260px;
+      }
+      .fh-file-label {
+        background: #2c6e9e;
+        display: inline-block;
+        padding: 0.6rem 1.2rem;
+        border-radius: 50px;
+        color: white;
+        font-weight: 500;
+        cursor: pointer;
+      }
+      .fh-url-input {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+      }
+      .fh-url-input input {
+        flex: 3;
+        padding: 0.65rem 1rem;
+        border-radius: 60px;
+        border: 1px solid #cbdde9;
+      }
+      .fh-btn-primary {
+        background: #2c6e9e;
+        border: none;
+        padding: 0.65rem 1.2rem;
+        border-radius: 60px;
+        color: white;
+        cursor: pointer;
+      }
+      .fh-image-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        gap: 1.3rem;
+      }
+      .fh-image-card {
+        background: white;
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 8px 18px rgba(0,0,0,0.08);
+        transition: transform 0.2s;
+      }
+      .fh-image-card:hover {
+        transform: translateY(-4px);
+      }
+      .fh-image-card img {
+        width: 100%;
+        aspect-ratio: 1 / 1;
+        object-fit: cover;
+        display: block;
+      }
+      .fh-card-actions {
+        padding: 0.6rem;
+        display: flex;
+        justify-content: flex-end;
+      }
+      .fh-remove-btn {
+        background: #fee2e2;
+        border: none;
+        padding: 0.3rem 0.9rem;
+        border-radius: 30px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        color: #b13e3e;
+        cursor: pointer;
+        display: none;
+      }
+      .fh-empty-message {
+        text-align: center;
+        padding: 3rem;
+        color: #6f8eaa;
+        grid-column: 1 / -1;
+        background: #fafdff;
+        border-radius: 2rem;
+      }
+      .fh-image-counter {
+        background: #deedf7;
+        padding: 0.2rem 0.9rem;
+        border-radius: 30px;
+        font-size: 0.8rem;
+        display: inline-block;
+      }
+      .fh-info-note {
+        text-align: center;
+        margin-top: 1.5rem;
+        font-size: 0.7rem;
+        color: #59748f;
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
+  // ================================
+  // PUBLIC GALLERY + ADMIN CONTROLS
+  // ================================
+  let isAdmin = false;
+
+  function buildUI() {
+    // Main container
+    const appDiv = document.createElement('div');
+    appDiv.id = 'fh-app';
+
+    // ----- 1. PUBLIC GALLERY (always visible) -----
+    const publicGallery = document.createElement('div');
+    publicGallery.className = 'fh-public-gallery';
+    publicGallery.innerHTML = `
+      <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 1rem;">
+        <h2>📸 Our Image Collection</h2>
+        <div id="fhImageCounterPublic" class="fh-image-counter">0 images</div>
+      </div>
+      <div id="fhImageGridPublic" class="fh-image-grid">
+        <div class="fh-empty-message">✨ No images yet — admin can add some ✨</div>
+      </div>
+    `;
+
+    // ----- 2. ADMIN LOGIN FORM -----
+    const loginDiv = document.createElement('div');
+    loginDiv.className = 'fh-admin-login';
+    loginDiv.id = 'fhLoginSection';
+    loginDiv.innerHTML = `
+      <h2>🔐 Admin access</h2>
+      <div style="color:#4a627a; margin-bottom:1.6rem;">Login to add or remove images</div>
+      <div class="fh-input-group">
+        <label>📞 Registered phone number</label>
+        <input type="tel" id="fhAdminPhone" placeholder="7657932896">
+      </div>
+      <div class="fh-input-group">
+        <label>🔒 Admin password</label>
+        <input type="password" id="fhAdminPassword" placeholder="••••••••">
+      </div>
+      <button class="fh-login-btn" id="fhLoginBtn">➡️ Login & manage gallery</button>
+      <div id="fhLoginError" class="fh-error">❌ Invalid phone or password</div>
+    `;
+
+    // ----- 3. ADMIN CONTROL PANEL (hidden until login) -----
+    const adminPanel = document.createElement('div');
+    adminPanel.className = 'fh-admin-panel';
+    adminPanel.id = 'fhAdminPanel';
+    adminPanel.innerHTML = `
+      <div style="background:#e9f0f5; border-radius:1.5rem; padding:1rem;">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap;">
+          <span class="fh-admin-badge">👑 Admin mode active</span>
+          <button id="fhLogoutBtn" class="fh-logout-btn">🚪 Logout</button>
+        </div>
+        <div class="fh-add-panels">
+          <div class="fh-card-panel">
+            <h3>📁 Upload from device</h3>
+            <label class="fh-file-label" for="fhImageUpload">📤 Select images</label>
+            <input type="file" id="fhImageUpload" accept="image/*" multiple style="display:none">
+          </div>
+          <div class="fh-card-panel">
+            <h3>🔗 Add from URL</h3>
+            <div class="fh-url-input">
+              <input type="text" id="fhImageUrl" placeholder="https://...">
+              <button id="fhAddUrlBtn" class="fh-btn-primary">➕ Add</button>
+            </div>
+          </div>
+        </div>
+        <div class="fh-info-note">⚡ Only you can see these controls. Remove buttons will appear on images.</div>
+      </div>
+    `;
+
+    appDiv.appendChild(publicGallery);
+    appDiv.appendChild(loginDiv);
+    appDiv.appendChild(adminPanel);
+    document.body.appendChild(appDiv);
+  }
+
+  function initAdminGallery() {
+    buildUI();
+
+    // DOM references
+    const publicGrid = document.getElementById('fhImageGridPublic');
+    const publicCounter = document.getElementById('fhImageCounterPublic');
+    const phoneInput = document.getElementById('fhAdminPhone');
+    const pwdInput = document.getElementById('fhAdminPassword');
+    const loginBtn = document.getElementById('fhLoginBtn');
+    const loginError = document.getElementById('fhLoginError');
+    const logoutBtn = document.getElementById('fhLogoutBtn');
+    const fileInput = document.getElementById('fhImageUpload');
+    const urlInput = document.getElementById('fhImageUrl');
+    const addUrlBtn = document.getElementById('fhAddUrlBtn');
+    const loginSection = document.getElementById('fhLoginSection');
+    const adminPanel = document.getElementById('fhAdminPanel');
+
+    // Helper: update image counter and empty message
+    function updatePublicCounter() {
+      const cards = publicGrid.querySelectorAll('.fh-image-card');
+      const total = cards.length;
+      if (total === 0) {
+        publicCounter.textContent = '0 images';
+        if (!publicGrid.querySelector('.fh-empty-message')) {
+          const empty = document.createElement('div');
+          empty.className = 'fh-empty-message';
+          empty.textContent = '✨ No images yet — admin can add ✨';
+          publicGrid.appendChild(empty);
+        }
+      } else {
+        const empty = publicGrid.querySelector('.fh-empty-message');
+        if (empty) empty.remove();
+        publicCounter.textContent = `${total} ${total === 1 ? 'image' : 'images'}`;
+      }
+    }
+
+    // Add image card to public grid
+    function addImageToGallery(src, altText = 'image') {
+      const empty = publicGrid.querySelector('.fh-empty-message');
+      if (empty) empty.remove();
+
+      const card = document.createElement('div');
+      card.className = 'fh-image-card';
+      const img = document.createElement('img');
+      img.src = src;
+      img.alt = altText;
+      img.onerror = () => {
+        alert(`Failed to load image: ${altText}`);
+        card.remove();
+        updatePublicCounter();
+      };
+      const actions = document.createElement('div');
+      actions.className = 'fh-card-actions';
+      const removeBtn = document.createElement('button');
+      removeBtn.className = 'fh-remove-btn';
+      removeBtn.textContent = '✖ Remove';
+      removeBtn.style.display = isAdmin ? 'block' : 'none';
+      removeBtn.onclick = () => {
+        if (!isAdmin) return;
+        if (img.src && img.src.startsWith('blob:')) URL.revokeObjectURL(img.src);
+        card.remove();
+        updatePublicCounter();
+      };
+      actions.appendChild(removeBtn);
+      card.appendChild(img);
+      card.appendChild(actions);
+      publicGrid.appendChild(card);
+      updatePublicCounter();
+      card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    // Toggle remove buttons visibility (admin only)
+    function toggleRemoveButtons(show) {
+      document.querySelectorAll('#fhImageGridPublic .fh-remove-btn').forEach(btn => {
+        btn.style.display = show ? 'block' : 'none';
+      });
+    }
+
+    // File upload handler
+    function handleFiles(files) {
+      for (let file of files) {
+        if (!file.type.startsWith('image/')) {
+          alert(`Skipped: ${file.name} is not an image.`);
+          continue;
+        }
+        const blobUrl = URL.createObjectURL(file);
+        addImageToGallery(blobUrl, file.name);
+      }
+      fileInput.value = '';
+    }
+
+    // URL add handler with validation
+    function addImageFromUrl(url) {
+      if (!url.trim()) return alert('Please enter an image URL.');
+      let trimmed = url.trim();
+      try {
+        new URL(trimmed);
+      } catch {
+        return alert('Invalid URL. Must start with http:// or https://');
+      }
+      addUrlBtn.disabled = true;
+      const originalText = addUrlBtn.textContent;
+      addUrlBtn.textContent = '⏳ ...';
+      const tester = new Image();
+      let finished = false;
+      const reset = () => {
+        setTimeout(() => {
+          addUrlBtn.disabled = false;
+          addUrlBtn.textContent = originalText;
+        }, 200);
+      };
+      tester.onload = () => {
+        if (!finished) {
+          finished = true;
+          addImageToGallery(trimmed, 'web image');
+          urlInput.value = '';
+          reset();
+        }
+      };
+      tester.onerror = () => {
+        if (!finished) {
+          finished = true;
+          alert('Cannot load image. Check URL & CORS.');
+          reset();
+        }
+      };
+      tester.src = trimmed;
+      setTimeout(() => {
+        if (!finished) {
+          finished = true;
+          alert('Timeout: image not loaded.');
+          reset();
+        }
+      }, 8000);
+    }
+
+    // Login / Logout
+    function performLogin() {
+      const phone = phoneInput.value.trim().replace(/\s/g, '');
+      const pwd = pwdInput.value.trim();
+      if (phone === ADMIN_CREDENTIALS.phone && pwd === ADMIN_CREDENTIALS.password) {
+        isAdmin = true;
+        loginError.style.display = 'none';
+        loginSection.style.display = 'none';
+        adminPanel.style.display = 'block';
+        toggleRemoveButtons(true);
+      } else {
+        loginError.style.display = 'block';
+      }
+    }
+
+    function performLogout() {
+      isAdmin = false;
+      adminPanel.style.display = 'none';
+      loginSection.style.display = 'block';
+      phoneInput.value = '';
+      pwdInput.value = '';
+      loginError.style.display = 'none';
+      toggleRemoveButtons(false);
+      // Keep images, just hide remove buttons
+    }
+
+    // Event listeners
+    loginBtn.addEventListener('click', performLogin);
+    logoutBtn.addEventListener('click', performLogout);
+    fileInput.addEventListener('change', (e) => {
+      if (!isAdmin) return alert('Admin login required');
+      handleFiles(Array.from(e.target.files));
+    });
+    addUrlBtn.addEventListener('click', () => {
+      if (!isAdmin) return alert('Admin login required');
+      addImageFromUrl(urlInput.value);
+    });
+    urlInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter' && isAdmin) addImageFromUrl(urlInput.value);
+    });
+    [phoneInput, pwdInput].forEach(inp => inp.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') performLogin();
+    }));
+
+    // Initial state: admin controls hidden, remove buttons hidden
+    adminPanel.style.display = 'none';
+    loginSection.style.display = 'block';
+    toggleRemoveButtons(false);
+    updatePublicCounter();
+  }
+
+  // ================================
+  // AI CHATBOT (Fashion Assistant)
+  // ================================
+  function createChatbot() {
+    const chatbotConfig = {
+      name: "Fashion Assistant",
+      avatar: "👗",
+      welcomeMessage: "Hello! I'm your Fashion Assistant. Ask me anything about Fashion Hut Garments!",
+      primaryColor: "#c87e3a",
+    };
+    const knowledge = {
+      location: "Main Bazar, Near Old Sabzi Mandi, Garhshankar, Punjab - 144527",
+      whatsapp: "+91 84371 72895",
+      instagram: "@fash_ionvision",
+      whatsappUrl: "https://wa.me/918437172895",
+      instagramUrl: "https://www.instagram.com/fash_ionvision",
+      products: [
+        "Men's ethnic wear (Kurtas, Sherwanis)",
+        "Women's traditional wear (Sarees, Kurtis, Suits)",
+        "Western wear for all ages",
+        "Wedding collection",
+        "Festive special outfits",
+        "Cotton summer collection",
+        "Winter layering clothes"
+      ],
+      faqs: {
+        "what products do you sell": "We offer Men's ethnic wear, Women's traditional wear, Western wear, Wedding collection, Festive outfits, Cotton summer collection, and Winter layering clothes.",
+        "where is your store located": `Our store is located at ${knowledge.location}.`,
+        "what are your business hours": "Monday to Saturday: 10:00 AM - 8:00 PM | Sunday: Closed",
+        "who is the owner": "The owner is Mr. Raman Nayyar.",
+        "how to contact": `WhatsApp: ${knowledge.whatsapp} | Instagram: ${knowledge.instagram}`,
+        "do you have wedding collection": "Yes! Exclusive bridal, groom, and family outfits.",
+        "do you have cotton clothes": "Yes, special cotton summer collection available.",
+        "what is your instagram": `Follow us: ${knowledge.instagram} (${knowledge.instagramUrl})`,
+        "do you offer online shopping": "Browse on Instagram and order via WhatsApp.",
+        "customization available": "Yes, contact on WhatsApp for custom outfits.",
+        "return policy": "Please contact directly on WhatsApp for returns.",
+        "new arrivals": "Follow Instagram for new arrivals!"
+      },
+      keywords: {
+        "product": "what products do you sell", "products": "what products do you sell",
+        "location": "where is your store located", "address": "where is your store located",
+        "timing": "what are your business hours", "hours": "what are your business hours",
+        "owner": "who is the owner", "founder": "who is the owner",
+        "contact": "how to contact", "phone": "how to contact", "whatsapp": "how to contact",
+        "wedding": "do you have wedding collection",
+        "cotton": "do you have cotton clothes", "summer": "do you have cotton clothes",
+        "instagram": "what is your instagram", "online": "do you offer online shopping",
+        "custom": "customization available", "return": "return policy", "exchange": "return policy",
+        "new": "new arrivals", "arrival": "new arrivals"
+      }
+    };
+
+    const chatbotHTML = `
+      <div id="fh-chatbot-container" style="position:fixed; bottom:20px; right:20px; z-index:1000; font-family:'Inter',sans-serif;">
+        <div id="fh-chatbot-toggle" style="width:60px; height:60px; background:${chatbotConfig.primaryColor}; border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 4px 15px rgba(0,0,0,0.2); animation: pulse 2s infinite;">
+          <span style="font-size:30px;">${chatbotConfig.avatar}</span>
+        </div>
+        <div id="fh-chatbot-window" style="position:absolute; bottom:80px; right:0; width:350px; height:500px; background:white; border-radius:20px; box-shadow:0 10px 40px rgba(0,0,0,0.2); display:none; flex-direction:column; overflow:hidden;">
+          <div style="background:${chatbotConfig.primaryColor}; color:white; padding:15px; display:flex; align-items:center; gap:10px;">
+            <span style="font-size:28px;">${chatbotConfig.avatar}</span>
+            <div style="flex:1;"><strong>${chatbotConfig.name}</strong><p style="font-size:11px; margin:0;">Online • Ready to help</p></div>
+            <button id="fh-chatbot-close" style="background:none; border:none; color:white; font-size:20px; cursor:pointer;">&times;</button>
+          </div>
+          <div id="fh-chatbot-messages" style="flex:1; overflow-y:auto; padding:15px; background:#f9f5f0; display:flex; flex-direction:column; gap:10px;"></div>
+          <div style="padding:10px; background:white; border-top:1px solid #eee; display:flex; gap:8px; flex-wrap:wrap;">
+            <button class="fh-quick-reply" data-q="What products do you sell?">🛍️ Products</button>
+            <button class="fh-quick-reply" data-q="Where is your store located?">📍 Location</button>
+            <button class="fh-quick-reply" data-q="What are your business hours?">⏰ Hours</button>
+            <button class="fh-quick-reply" data-q="How to contact?">📞 Contact</button>
+          </div>
+          <div style="padding:10px; background:white; border-top:1px solid #eee; display:flex; gap:10px;">
+            <input type="text" id="fh-chatbot-input" placeholder="Ask me anything..." style="flex:1; padding:10px; border:1px solid #ddd; border-radius:25px;">
+            <button id="fh-chatbot-send" style="background:${chatbotConfig.primaryColor}; color:white; border:none; width:40px; height:40px; border-radius:50%; cursor:pointer;">➤</button>
+          </div>
+        </div>
+      </div>
+      <style>
+        @keyframes pulse { 0%,100% { transform:scale(1); } 50% { transform:scale(1.05); } }
+        @keyframes slideUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+        .fh-message-bubble { max-width:80%; padding:10px 14px; border-radius:18px; font-size:14px; animation:fadeIn 0.3s; }
+        .fh-user-message { background:${chatbotConfig.primaryColor}; color:white; align-self:flex-end; border-bottom-right-radius:4px; }
+        .fh-bot-message { background:white; color:#333; align-self:flex-start; border-bottom-left-radius:4px; box-shadow:0 1px 2px rgba(0,0,0,0.1); }
+        .fh-quick-reply { background:#f0e6dc; border:none; padding:6px 12px; border-radius:20px; font-size:12px; cursor:pointer; color:#6b3f1c; }
+        .fh-quick-reply:hover { background:${chatbotConfig.primaryColor}; color:white; }
+        @keyframes fadeIn { from { opacity:0; transform:translateX(-10px); } to { opacity:1; transform:translateX(0); } }
+        #fh-chatbot-messages { display: flex; flex-direction: column; }
+      </style>
+    `;
+    document.body.insertAdjacentHTML('beforeend', chatbotHTML);
+
+    const toggle = document.getElementById('fh-chatbot-toggle');
+    const windowDiv = document.getElementById('fh-chatbot-window');
+    const close = document.getElementById('fh-chatbot-close');
+    const send = document.getElementById('fh-chatbot-send');
+    const input = document.getElementById('fh-chatbot-input');
+    const messages = document.getElementById('fh-chatbot-messages');
+
+    function addMessage(text, isUser) {
+      const div = document.createElement('div');
+      div.className = `fh-message-bubble ${isUser ? 'fh-user-message' : 'fh-bot-message'}`;
+      div.innerHTML = text;
+      messages.appendChild(div);
+      messages.scrollTop = messages.scrollHeight;
+    }
+
+    function getBotResponse(userMsg) {
+      const lower = userMsg.toLowerCase();
+      if (lower.match(/hello|hi|hey|namaste/)) return "👋 Hello! Welcome to Fashion Hut Garments! How can I help?";
+      if (lower.match(/thank|thanks/)) return "😊 You're welcome! Happy shopping!";
+      if (lower.match(/bye|goodbye/)) return "👋 Goodbye! Visit us again.";
+      if (lower.match(/help/)) return "Ask me about products, location, hours, wedding collection, etc.";
+      for (let [kw, q] of Object.entries(knowledge.keywords)) {
+        if (lower.includes(kw)) return knowledge.faqs[q] || "Please contact us on WhatsApp for details.";
+      }
+      for (let [q, a] of Object.entries(knowledge.faqs)) {
+        if (lower.includes(q) || q.includes(lower)) return a;
+      }
+      return `📌 I'm not sure. Here's our contact:\n📍 ${knowledge.location}\n📞 WhatsApp: ${knowledge.whatsapp}\n📷 Instagram: ${knowledge.instagram}`;
+    }
+
+    function sendMessage() {
+      const msg = input.value.trim();
+      if (!msg) return;
+      addMessage(msg, true);
+      input.value = '';
+      setTimeout(() => addMessage(getBotResponse(msg), false), 300);
+    }
+
+    toggle.onclick = () => { windowDiv.style.display = windowDiv.style.display === 'none' || !windowDiv.style.display ? 'flex' : 'none'; };
+    close.onclick = () => { windowDiv.style.display = 'none'; };
+    send.onclick = sendMessage;
+    input.onkeypress = (e) => { if (e.key === 'Enter') sendMessage(); };
+    document.querySelectorAll('.fh-quick-reply').forEach(btn => {
+      btn.onclick = () => {
+        const q = btn.getAttribute('data-q');
+        addMessage(q, true);
+        setTimeout(() => addMessage(getBotResponse(q), false), 300);
+      };
+    });
+    addMessage(chatbotConfig.welcomeMessage, false);
+  }
+
+  // ================================
+  // INITIALISE EVERYTHING
+  // ================================
+  function init() {
+    injectStyles();
+    initAdminGallery();
+    createChatbot();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
+// Add this at the top of your file (after ADMIN_CREDENTIALS)
+const IMGBB_API_KEY = "d0eb6e6cba0c19d81a330cee392720e3"; // Get from https://api.imgbb.com
+
+// Replace the handleFiles function with this:
+async function handleFiles(files) {
+    for (let file of files) {
+        if (!file.type.startsWith('image/')) {
+            alert(`Skipped: ${file.name} is not an image.`);
+            continue;
+        }
+        
+        // Show uploading indicator
+        const loadingCard = addLoadingImage(file.name);
+        
+        try {
+            // Upload to ImgBB
+            const formData = new FormData();
+            formData.append('image', file);
+            
+            const response = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
+                method: 'POST',
+                body: formData
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                const imageUrl = result.data.url;
+                // Remove loading card and add permanent image
+                loadingCard.remove();
+                addImageToGallery(imageUrl, file.name);
+                saveImageToLocalStorage(imageUrl, file.name);
+            } else {
+                alert('Upload failed. Try again.');
+                loadingCard.remove();
+            }
+        } catch (error) {
+            alert('Upload error: ' + error.message);
+            loadingCard.remove();
+        }
+    }
+    fileInput.value = '';
+}
+
+// Add loading indicator function
+function addLoadingImage(filename) {
+    const empty = document.querySelector('#fhImageGridPublic .fh-empty-message');
+    if (empty) empty.remove();
+    
+    const card = document.createElement('div');
+    card.className = 'fh-image-card';
+    card.innerHTML = `
+        <div style="aspect-ratio:1; display:flex; align-items:center; justify-content:center; background:#f0f0f0;">
+            <span>⏳ Uploading ${filename}...</span>
+        </div>
+    `;
+    document.getElementById('fhImageGridPublic').appendChild(card);
+    return card;
+}
+
+// Save image URL to localStorage (so it persists after refresh)
+function saveImageToLocalStorage(url, name) {
+    let images = JSON.parse(localStorage.getItem('fh_images') || '[]');
+    images.push({ url, name, timestamp: Date.now() });
+    localStorage.setItem('fh_images', JSON.stringify(images));
+}
+
+// Load saved images on page load
+function loadSavedImages() {
+    const images = JSON.parse(localStorage.getItem('fh_images') || '[]');
+    images.forEach(img => {
+        addImageToGallery(img.url, img.name);
+    });
+}
+
+// Modify URL handler too
+function addImageFromUrl(url) {
+    if (!url.trim()) return alert('https://i.ibb.co/PpHcQmb/Whats-App-Image-2026-05-02-at-17-55-22.jpg');
+    let trimmed = url.trim();
+    try {
+        new URL(trimmed);
+    } catch {
+        return alert('Invalid URL');
+    }
+    
+    addImageToGallery(trimmed, 'https://i.ibb.co/PpHcQmb/Whats-App-Image-2026-05-02-at-17-55-22.jpg');
+    saveImageToLocalStorage(trimmed, 'web image');
+    urlInput.value = '';
+}
+
+// Also save when adding via URL
+// Call loadSavedImages() in initAdminGallery after updatePublicCounter()
+// Add at the beginning of initAdminGallery()
+/**
+ * COMPLETE SOLUTION: Permanent Image Storage
+ * Images stay even after page refresh!
+ */
+
+/**
+ * COMPLETE SOLUTION: Fashion Hut Garments
+ * - Public image gallery with PERMANENT storage (ImgBB + LocalStorage)
+ * - Admin login (phone: 7657932896, password: Admin2025)
+ * - AI Chatbot for customer support
+ * Images stay forever, even after page refresh!
+ */
+
+(function() {
+    // ============================================
+    // CONFIGURATION
+    // ============================================
+    const ADMIN_CREDENTIALS = {
+        phone: "7657932896",
+        password: "Admin2025"
+    };
+    
+    // 🔑 GET YOUR FREE API KEY FROM https://api.imgbb.com
+    // Replace this with your actual API key
+    const IMGBB_API_KEY = "YOUR_API_KEY_HERE"; // ← CHANGE THIS!
+    
+    // ============================================
+    // INJECT STYLES
+    // ============================================
+    function injectStyles() {
+        const style = document.createElement('style');
+        style.textContent = `
+            .fh-admin-login, .fh-admin-panel, .fh-public-gallery {
+                font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            }
+            .fh-public-gallery {
+                margin: 2rem auto;
+                max-width: 1400px;
+                padding: 0 1rem;
+            }
+            .fh-admin-login {
+                background: rgba(255,255,255,0.96);
+                border-radius: 2rem;
+                max-width: 500px;
+                margin: 2rem auto;
+                padding: 2rem;
+                box-shadow: 0 25px 45px -12px rgba(0,0,0,0.25);
+            }
+            .fh-admin-login h2 {
+                font-size: 1.8rem;
+                background: linear-gradient(135deg, #1f4e6e, #2b6fa0);
+                background-clip: text;
+                -webkit-background-clip: text;
+                color: transparent;
+            }
+            .fh-input-group {
+                margin-bottom: 1.2rem;
+            }
+            .fh-input-group label {
+                display: block;
+                font-weight: 500;
+                font-size: 0.85rem;
+                margin-bottom: 0.3rem;
+                color: #1f3b4c;
+            }
+            .fh-input-group input {
+                width: 100%;
+                padding: 0.75rem 1rem;
+                border: 1px solid #cbdde9;
+                border-radius: 60px;
+                font-size: 1rem;
+            }
+            .fh-login-btn {
+                background: #1f547c;
+                width: 100%;
+                padding: 0.8rem;
+                border: none;
+                border-radius: 60px;
+                font-weight: 600;
+                color: white;
+                cursor: pointer;
+                margin-top: 0.5rem;
+            }
+            .fh-error {
+                color: #c74444;
+                background: #ffe8e8;
+                padding: 0.5rem 1rem;
+                border-radius: 50px;
+                font-size: 0.8rem;
+                text-align: center;
+                margin-top: 1rem;
+                display: none;
+            }
+            .fh-admin-panel {
+                display: none;
+                max-width: 1400px;
+                margin: 1rem auto;
+                padding: 1rem;
+            }
+            .fh-admin-badge {
+                background: #e9c46a;
+                display: inline-block;
+                padding: 0.2rem 1rem;
+                border-radius: 40px;
+                font-size: 0.75rem;
+                font-weight: 600;
+                color: #3b2b1f;
+            }
+            .fh-logout-btn {
+                background: transparent;
+                border: 1px solid #b0c7db;
+                padding: 0.4rem 1rem;
+                border-radius: 50px;
+                cursor: pointer;
+                color: #2b6a8f;
+                margin-left: 1rem;
+            }
+            .fh-add-panels {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 1.8rem;
+                justify-content: center;
+                margin: 1rem 0;
+            }
+            .fh-card-panel {
+                background: white;
+                border-radius: 28px;
+                box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+                padding: 1.5rem;
+                flex: 1;
+                min-width: 260px;
+            }
+            .fh-file-label {
+                background: #2c6e9e;
+                display: inline-block;
+                padding: 0.6rem 1.2rem;
+                border-radius: 50px;
+                color: white;
+                font-weight: 500;
+                cursor: pointer;
+            }
+            .fh-url-input {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 0.5rem;
+            }
+            .fh-url-input input {
+                flex: 3;
+                padding: 0.65rem 1rem;
+                border-radius: 60px;
+                border: 1px solid #cbdde9;
+            }
+            .fh-btn-primary {
+                background: #2c6e9e;
+                border: none;
+                padding: 0.65rem 1.2rem;
+                border-radius: 60px;
+                color: white;
+                cursor: pointer;
+            }
+            .fh-image-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+                gap: 1.3rem;
+            }
+            .fh-image-card {
+                background: white;
+                border-radius: 20px;
+                overflow: hidden;
+                box-shadow: 0 8px 18px rgba(0,0,0,0.08);
+                position: relative;
+            }
+            .fh-image-card img {
+                width: 100%;
+                aspect-ratio: 1 / 1;
+                object-fit: cover;
+            }
+            .fh-card-actions {
+                padding: 0.6rem;
+                display: flex;
+                justify-content: flex-end;
+                background: white;
+            }
+            .fh-remove-btn {
+                background: #fee2e2;
+                border: none;
+                padding: 0.3rem 0.9rem;
+                border-radius: 30px;
+                font-size: 0.7rem;
+                font-weight: 600;
+                color: #b13e3e;
+                cursor: pointer;
+                display: none;
+            }
+            .fh-empty-message {
+                text-align: center;
+                padding: 3rem;
+                color: #6f8eaa;
+                grid-column: 1 / -1;
+                background: #fafdff;
+                border-radius: 2rem;
+            }
+            .fh-image-counter {
+                background: #deedf7;
+                padding: 0.2rem 0.9rem;
+                border-radius: 30px;
+                font-size: 0.8rem;
+                display: inline-block;
+            }
+            .fh-info-note {
+                text-align: center;
+                margin-top: 1.5rem;
+                font-size: 0.7rem;
+                color: #59748f;
+            }
+            .loading-card {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                background: #f8f9fa;
+                aspect-ratio: 1;
+                font-size: 14px;
+                color: #666;
+            }
+        `;
+        document.head.appendChild(style);
+    }
+    
+    // ============================================
+    // MAIN GALLERY FUNCTIONS
+    // ============================================
+    let isAdmin = false;
+    let publicGrid, publicCounter, fileInput, urlInput, addUrlBtn, loginSection, adminPanel;
+    
+    function updatePublicCounter() {
+        if (!publicGrid) return;
+        const cards = publicGrid.querySelectorAll('.fh-image-card:not(.loading-template)');
+        const total = cards.length;
+        if (total === 0) {
+            publicCounter.textContent = '0 images';
+            if (!publicGrid.querySelector('.fh-empty-message')) {
+                const empty = document.createElement('div');
+                empty.className = 'fh-empty-message';
+                empty.textContent = '✨ No images yet — admin can add ✨';
+                publicGrid.appendChild(empty);
+            }
+        } else {
+            const empty = publicGrid.querySelector('.fh-empty-message');
+            if (empty) empty.remove();
+            publicCounter.textContent = `${total} ${total === 1 ? 'image' : 'images'}`;
+        }
+    }
+    
+    function addImageToGallery(src, altText = 'image', saveToStorage = true) {
+        if (!publicGrid) return;
+        
+        const empty = publicGrid.querySelector('.fh-empty-message');
+        if (empty) empty.remove();
+        
+        const card = document.createElement('div');
+        card.className = 'fh-image-card';
+        const img = document.createElement('img');
+        img.src = src;
+        img.alt = altText;
+        img.onerror = () => {
+            console.warn(`Failed to load: ${altText}`);
+            card.remove();
+            updatePublicCounter();
+        };
+        const actions = document.createElement('div');
+        actions.className = 'fh-card-actions';
+        const removeBtn = document.createElement('button');
+        removeBtn.className = 'fh-remove-btn';
+        removeBtn.textContent = '✖ Remove';
+        removeBtn.style.display = isAdmin ? 'block' : 'none';
+        removeBtn.onclick = () => {
+            if (!isAdmin) return;
+            if (confirm('Remove this image?')) {
+                card.remove();
+                updatePublicCounter();
+                // Remove from storage
+                removeImageFromStorage(src);
+            }
+        };
+        actions.appendChild(removeBtn);
+        card.appendChild(img);
+        card.appendChild(actions);
+        publicGrid.appendChild(card);
+        updatePublicCounter();
+        
+        if (saveToStorage && src && !src.startsWith('blob:')) {
+            saveImageToStorage(src, altText);
+        }
+        
+        return card;
+    }
+    
+    function toggleRemoveButtons(show) {
+        document.querySelectorAll('#fhImageGridPublic .fh-remove-btn').forEach(btn => {
+            btn.style.display = show ? 'block' : 'none';
+        });
+    }
+    
+    // ============================================
+    // PERMANENT STORAGE FUNCTIONS
+    // ============================================
+    async function uploadToImgBB(file) {
+        const formData = new FormData();
+        formData.append('image', file);
+        
+        const response = await fetch(`https://api.imgbb.com/1/upload?key=${d0eb6e6cba0c19d81a330cee392720e3}`, {
+            method: 'POST',
+            body: formData
+        });
+        
+        const result = await response.json();
+        if (result.success) {
+            return result.data.url;
+        } else {
+            throw new Error(result.error?.message || 'Upload failed');
+        }
+    }
+    
+    function saveImageToStorage(url, name) {
+        let images = JSON.parse(localStorage.getItem('fh_permanent_images') || '[]');
+        // Avoid duplicates
+        if (!images.some(img => img.url === url)) {
+            images.push({ url, name, date: new Date().toISOString() });
+            localStorage.setItem('fh_permanent_images', JSON.stringify(images));
+        }
+    }
+    
+    function removeImageFromStorage(url) {
+        let images = JSON.parse(localStorage.getItem('fh_permanent_images') || '[]');
+        images = images.filter(img => img.url !== url);
+        localStorage.setItem('fh_permanent_images', JSON.stringify(images));
+    }
+    
+    function loadAllImages() {
+        const images = JSON.parse(localStorage.getItem('fh_permanent_images') || '[]');
+        images.forEach(img => {
+            addImageToGallery(img.url, img.name, false); // Don't save again
+        });
+    }
+    
+    function clearAllImages() {
+        if (confirm('⚠️ Delete ALL images permanently? This cannot be undone!')) {
+            localStorage.removeItem('fh_permanent_images');
+            document.querySelectorAll('#fhImageGridPublic .fh-image-card').forEach(card => card.remove());
+            updatePublicCounter();
+        }
+    }
+    
+    // ============================================
+    // FILE AND URL HANDLERS (with permanent storage)
+    // ============================================
+    async function handleFiles(files) {
+        if (!IMGBB_API_KEY || IMGBB_API_KEY === "d0eb6e6cba0c19d81a330cee392720e3") {
+            alert('⚠️ Please set your ImgBB API key first!\n\nGet one free from: https://api.imgbb.com');
+            return;
+        }
+        
+        for (let file of files) {
+            if (!file.type.startsWith('image/')) {
+                alert(`Skipped: ${file.name} is not an image.`);
+                continue;
+            }
+            
+            // Show loading indicator
+            const loadingCard = document.createElement('div');
+            loadingCard.className = 'fh-image-card loading-template';
+            loadingCard.innerHTML = `<div class="loading-card">⏳ Uploading ${file.name}...</div>`;
+            publicGrid.appendChild(loadingCard);
+            
+            try {
+                const permanentUrl = await uploadToImgBB(file);
+                loadingCard.remove();
+                addImageToGallery(permanentUrl, file.name, true);
+            } catch (error) {
+                alert(`Upload failed for ${file.name}: ${error.message}`);
+                loadingCard.remove();
+            }
+        }
+        if (fileInput) fileInput.value = '';
+    }
+    
+    function addImageFromUrl(url) {
+        if (!url.trim()) return alert('Please enter an image URL.');
+        let trimmed = url.trim();
+        try {
+            new URL(trimmed);
+        } catch {
+            return alert('Invalid URL. Must start with http:// or https://');
+        }
+        addImageToGallery(trimmed, 'web image', true);
+        if (urlInput) urlInput.value = '';
+    }
+    
+    // ============================================
+    // BUILD UI
+    // ============================================
+    function buildUI() {
+        const appDiv = document.createElement('div');
+        appDiv.id = 'fh-app';
+        
+        // Public Gallery
+        const publicGallery = document.createElement('div');
+        publicGallery.className = 'fh-public-gallery';
+        publicGallery.innerHTML = `
+            <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 1rem;">
+                <h2>📸 Our Image Collection</h2>
+                <div id="fhImageCounterPublic" class="fh-image-counter">0 images</div>
+            </div>
+            <div id="fhImageGridPublic" class="fh-image-grid">
+                <div class="fh-empty-message">✨ No images yet — admin can add some ✨</div>
+            </div>
+        `;
+        
+        // Login Section
+        loginSection = document.createElement('div');
+        loginSection.className = 'fh-admin-login';
+        loginSection.id = 'fhLoginSection';
+        loginSection.innerHTML = `
+            <h2>🔐 Admin access</h2>
+            <div style="color:#4a627a; margin-bottom:1.6rem;">Login to add or remove images</div>
+            <div class="fh-input-group">
+                <label>📞 Registered phone number</label>
+                <input type="tel" id="fhAdminPhone" placeholder="7657932896">
+            </div>
+            <div class="fh-input-group">
+                <label>🔒 Admin password</label>
+                <input type="password" id="fhAdminPassword" placeholder="••••••••">
+            </div>
+            <button class="fh-login-btn" id="fhLoginBtn">➡️ Login & manage gallery</button>
+            <div id="fhLoginError" class="fh-error">❌ Invalid phone or password</div>
+        `;
+        
+        // Admin Panel
+        adminPanel = document.createElement('div');
+        adminPanel.className = 'fh-admin-panel';
+        adminPanel.id = 'fhAdminPanel';
+        adminPanel.innerHTML = `
+            <div style="background:#e9f0f5; border-radius:1.5rem; padding:1rem;">
+                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap;">
+                    <span class="fh-admin-badge">👑 Admin mode active</span>
+                    <button id="fhLogoutBtn" class="fh-logout-btn">🚪 Logout</button>
+                </div>
+                <div class="fh-add-panels">
+                    <div class="fh-card-panel">
+                        <h3>📁 Upload from device</h3>
+                        <label class="fh-file-label" for="fhImageUpload">📤 Select images</label>
+                        <input type="file" id="fhImageUpload" accept="image/*" multiple style="display:none">
+                        <div style="font-size:0.7rem; margin-top:0.5rem; color:#666;">Images save permanently!</div>
+                    </div>
+                    <div class="fh-card-panel">
+                        <h3>🔗 Add from URL</h3>
+                        <div class="fh-url-input">
+                            <input type="text" id="fhImageUrl" placeholder="https://...">
+                            <button id="fhAddUrlBtn" class="fh-btn-primary">➕ Add</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="fh-info-note">⚡ Images are saved permanently. Remove buttons appear in admin mode.</div>
+            </div>
+        `;
+        
+        appDiv.appendChild(publicGallery);
+        appDiv.appendChild(loginSection);
+        appDiv.appendChild(adminPanel);
+        document.body.appendChild(appDiv);
+        
+        // Set global references
+        publicGrid = document.getElementById('fhImageGridPublic');
+        publicCounter = document.getElementById('fhImageCounterPublic');
+        fileInput = document.getElementById('fhImageUpload');
+        urlInput = document.getElementById('fhImageUrl');
+        addUrlBtn = document.getElementById('fhAddUrlBtn');
+    }
+    
+    // ============================================
+    // ADMIN LOGIN/LOGOUT
+    // ============================================
+    function setupAdminEvents() {
+        const phoneInput = document.getElementById('fhAdminPhone');
+        const pwdInput = document.getElementById('fhAdminPassword');
+        const loginBtn = document.getElementById('fhLoginBtn');
+        const loginError = document.getElementById('fhLoginError');
+        const logoutBtn = document.getElementById('fhLogoutBtn');
+        
+        function performLogin() {
+            const phone = phoneInput.value.trim().replace(/\s/g, '');
+            const pwd = pwdInput.value.trim();
+            if (phone === ADMIN_CREDENTIALS.phone && pwd === ADMIN_CREDENTIALS.password) {
+                isAdmin = true;
+                loginError.style.display = 'none';
+                loginSection.style.display = 'none';
+                adminPanel.style.display = 'block';
+                toggleRemoveButtons(true);
+            } else {
+                loginError.style.display = 'block';
+            }
+        }
+        
+        function performLogout() {
+            isAdmin = false;
+            adminPanel.style.display = 'none';
+            loginSection.style.display = 'block';
+            phoneInput.value = '';
+            pwdInput.value = '';
+            loginError.style.display = 'none';
+            toggleRemoveButtons(false);
+        }
+        
+        loginBtn.addEventListener('click', performLogin);
+        logoutBtn.addEventListener('click', performLogout);
+        
+        fileInput.addEventListener('change', (e) => {
+            if (!isAdmin) return alert('Admin login required');
+            handleFiles(Array.from(e.target.files));
+        });
+        
+        addUrlBtn.addEventListener('click', () => {
+            if (!isAdmin) return alert('Admin login required');
+            addImageFromUrl(urlInput.value);
+        });
+        
+        urlInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && isAdmin) addImageFromUrl(urlInput.value);
+        });
+        
+        [phoneInput, pwdInput].forEach(inp => inp.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') performLogin();
+        }));
+    }
+    
+    // ============================================
+    // CHATBOT
+    // ============================================
+    function createChatbot() {
+        const chatbotHTML = `
+            <div id="fh-chatbot-container" style="position:fixed; bottom:20px; right:20px; z-index:1000;">
+                <div id="fh-chatbot-toggle" style="width:60px; height:60px; background:#c87e3a; border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 4px 15px rgba(0,0,0,0.2);">
+                    <span style="font-size:30px;">👗</span>
+                </div>
+                <div id="fh-chatbot-window" style="position:absolute; bottom:80px; right:0; width:350px; height:500px; background:white; border-radius:20px; box-shadow:0 10px 40px rgba(0,0,0,0.2); display:none; flex-direction:column; overflow:hidden;">
+                    <div style="background:#c87e3a; color:white; padding:15px; display:flex; align-items:center; gap:10px;">
+                        <span style="font-size:28px;">👗</span>
+                        <div style="flex:1;"><strong>Fashion Assistant</strong><p style="font-size:11px; margin:0;">Online • Ready to help</p></div>
+                        <button id="fh-chatbot-close" style="background:none; border:none; color:white; font-size:20px; cursor:pointer;">&times;</button>
+                    </div>
+                    <div id="fh-chatbot-messages" style="flex:1; overflow-y:auto; padding:15px; background:#f9f5f0; display:flex; flex-direction:column; gap:10px;"></div>
+                    <div style="padding:10px; background:white; border-top:1px solid #eee; display:flex; gap:8px; flex-wrap:wrap;">
+                        <button class="fh-qr" data-q="What products do you sell?">🛍️ Products</button>
+                        <button class="fh-qr" data-q="Where is your store located?">📍 Location</button>
+                        <button class="fh-qr" data-q="What are your business hours?">⏰ Hours</button>
+                        <button class="fh-qr" data-q="How to contact?">📞 Contact</button>
+                    </div>
+                    <div style="padding:10px; background:white; border-top:1px solid #eee; display:flex; gap:10px;">
+                        <input type="text" id="fh-chatbot-input" placeholder="Ask me anything..." style="flex:1; padding:10px; border:1px solid #ddd; border-radius:25px;">
+                        <button id="fh-chatbot-send" style="background:#c87e3a; color:white; border:none; width:40px; height:40px; border-radius:50%; cursor:pointer;">➤</button>
+                    </div>
+                </div>
+            </div>
+            <style>
+                .fh-message-bubble { max-width:80%; padding:10px 14px; border-radius:18px; font-size:14px; margin:4px 0; }
+                .fh-user-message { background:#c87e3a; color:white; align-self:flex-end; border-bottom-right-radius:4px; }
+                .fh-bot-message { background:white; color:#333; align-self:flex-start; border-bottom-left-radius:4px; box-shadow:0 1px 2px rgba(0,0,0,0.1); }
+                .fh-qr { background:#f0e6dc; border:none; padding:6px 12px; border-radius:20px; font-size:12px; cursor:pointer; color:#6b3f1c; }
+                .fh-qr:hover { background:#c87e3a; color:white; }
+                #fh-chatbot-messages { display: flex; flex-direction: column; }
+            </style>
+        `;
+        document.body.insertAdjacentHTML('beforeend', chatbotHTML);
+        
+        const toggle = document.getElementById('fh-chatbot-toggle');
+        const windowDiv = document.getElementById('fh-chatbot-window');
+        const close = document.getElementById('fh-chatbot-close');
+        const send = document.getElementById('fh-chatbot-send');
+        const input = document.getElementById('fh-chatbot-input');
+        const messages = document.getElementById('fh-chatbot-messages');
+        
+        const responses = {
+            products: "We offer Men's ethnic wear, Women's traditional wear (Sarees, Kurtis, Suits), Western wear, Wedding collection, Festive outfits, Cotton summer collection!",
+            location: "Main Bazar, Near Old Sabzi Mandi, Garhshankar, Punjab - 144527",
+            hours: "Monday to Saturday: 10:00 AM - 8:00 PM | Sunday: Closed",
+            contact: "WhatsApp: +91 84371 72895 | Instagram: @fash_ionvision"
+        };
+        
+        function addMessage(text, isUser) {
+            const div = document.createElement('div');
+            div.className = `fh-message-bubble ${isUser ? 'fh-user-message' : 'fh-bot-message'}`;
+            div.innerHTML = text;
+            messages.appendChild(div);
+            messages.scrollTop = messages.scrollHeight;
+        }
+        
+        function getReply(msg) {
+            const lower = msg.toLowerCase();
+            if (lower.includes('product')) return responses.products;
+            if (lower.includes('location') || lower.includes('where')) return responses.location;
+            if (lower.includes('hour') || lower.includes('timing')) return responses.hours;
+            if (lower.includes('contact') || lower.includes('whatsapp')) return responses.contact;
+            if (lower.match(/hello|hi|hey/)) return "👋 Hello! Welcome to Fashion Hut Garments! How can I help?";
+            if (lower.includes('thank')) return "😊 You're welcome! Happy shopping!";
+            return `I can help with:\n- Products\n- Location & Hours\n- Contact info\nAsk me anything!`;
+        }
+        
+        function sendMessage() {
+            const msg = input.value.trim();
+            if (!msg) return;
+            addMessage(msg, true);
+            input.value = '';
+            setTimeout(() => addMessage(getReply(msg), false), 300);
+        }
+        
+        toggle.onclick = () => windowDiv.style.display = windowDiv.style.display === 'none' ? 'flex' : 'none';
+        close.onclick = () => windowDiv.style.display = 'none';
+        send.onclick = sendMessage;
+        input.onkeypress = (e) => { if (e.key === 'Enter') sendMessage(); };
+        document.querySelectorAll('.fh-qr').forEach(btn => {
+            btn.onclick = () => {
+                const q = btn.getAttribute('data-q');
+                addMessage(q, true);
+                setTimeout(() => addMessage(getReply(q), false), 300);
+            };
+        });
+        addMessage("Hello! I'm your Fashion Assistant. Ask me anything about Fashion Hut Garments!", false);
+    }
+    
+    // ============================================
+    // INITIALIZE
+    // ============================================
+    function init() {
+        injectStyles();
+        buildUI();
+        setupAdminEvents();
+        loadAllImages(); // Load saved images from localStorage
+        createChatbot();
+        
+        // Initial state
+        adminPanel.style.display = 'none';
+        loginSection.style.display = 'block';
+        toggleRemoveButtons(false);
+        
+        console.log('✅ Fashion Hut Gallery initialized with permanent storage!');
+        if (!IMGBB_API_KEY || IMGBB_API_KEY === "d0eb6e6cba0c19d81a330cee392720e3") {
+            console.warn('⚠️ Please set your ImgBB API key for image uploads! Get one from https://api.imgbb.com');
+        }
+    }
+    
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
+})();
