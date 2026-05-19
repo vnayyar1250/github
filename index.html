@@ -107,6 +107,662 @@
   <!-- your existing website content -->
   
 <script src="fashionhut-complete.js"></script>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>Smart Review Panel | Customer Feedback with Admin Controls</title>
+  <!-- EmailJS SDK -->
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+  <!-- Font Awesome 6 (free icons) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: system-ui, 'Segoe UI', 'Poppins', 'Roboto', sans-serif;
+    }
+
+    body {
+      background: linear-gradient(145deg, #f5f7fc 0%, #eef2f8 100%);
+      padding: 2rem 1.5rem;
+      min-height: 100vh;
+    }
+
+    .dashboard-container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    /* Header */
+    .page-header {
+      text-align: center;
+      margin-bottom: 2.5rem;
+    }
+    .page-header h1 {
+      font-size: 2.2rem;
+      background: linear-gradient(135deg, #1f2b3c, #2c3e66);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      letter-spacing: -0.3px;
+    }
+    .page-header p {
+      color: #4a627a;
+      margin-top: 0.5rem;
+    }
+
+    /* Two column layout */
+    .review-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 2rem;
+    }
+
+    /* Left: Submit review panel */
+    .submit-card, .reviews-list-card {
+      background: rgba(255,255,255,0.92);
+      backdrop-filter: blur(2px);
+      border-radius: 2rem;
+      box-shadow: 0 20px 35px -12px rgba(0,0,0,0.1);
+      padding: 1.8rem 2rem;
+      transition: transform 0.2s;
+      border: 1px solid rgba(255,255,255,0.5);
+    }
+    .submit-card {
+      flex: 1.2;
+      min-width: 280px;
+    }
+    .reviews-list-card {
+      flex: 2;
+      min-width: 340px;
+    }
+
+    /* Form styling */
+    .form-group {
+      margin-bottom: 1.4rem;
+    }
+    label {
+      font-weight: 600;
+      color: #1e2f41;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+    label i {
+      color: #3b71ca;
+      width: 20px;
+    }
+    input, select, textarea {
+      width: 100%;
+      padding: 12px 16px;
+      border: 1.5px solid #dfe6ef;
+      border-radius: 1.2rem;
+      font-size: 0.95rem;
+      background: white;
+      transition: 0.2s;
+      outline: none;
+    }
+    input:focus, select:focus, textarea:focus {
+      border-color: #3b71ca;
+      box-shadow: 0 0 0 3px rgba(59,113,202,0.2);
+    }
+    textarea {
+      resize: vertical;
+      min-height: 90px;
+    }
+    .rating-stars {
+      display: flex;
+      gap: 10px;
+      font-size: 1.9rem;
+      cursor: pointer;
+      margin-top: 6px;
+      margin-bottom: 6px;
+    }
+    .star {
+      color: #cfdde6;
+      transition: 0.1s;
+    }
+    .star.active, .star.hover {
+      color: #f5b042;
+      text-shadow: 0 0 3px rgba(245,176,66,0.5);
+    }
+    button {
+      background: #1f2b3c;
+      border: none;
+      padding: 12px 22px;
+      border-radius: 2rem;
+      font-weight: 600;
+      color: white;
+      cursor: pointer;
+      transition: 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 1rem;
+    }
+    button i {
+      font-size: 1rem;
+    }
+    button:hover {
+      background: #2c3e66;
+      transform: scale(0.98);
+    }
+    .btn-secondary {
+      background: #5a6e85;
+    }
+    .btn-secondary:hover {
+      background: #3b556e;
+    }
+    .btn-danger {
+      background: #b13e3e;
+    }
+    .btn-danger:hover {
+      background: #8f2d2d;
+    }
+    .admin-zone {
+      margin-top: 20px;
+      padding-top: 15px;
+      border-top: 2px dashed #cddfe7;
+    }
+    .admin-toggle {
+      font-size: 0.85rem;
+      background: #eef2fa;
+      color: #2c3e66;
+      width: 100%;
+      justify-content: center;
+    }
+    .success-msg {
+      background: #dff0e4;
+      color: #1f6e43;
+      padding: 10px;
+      border-radius: 1rem;
+      margin-bottom: 1rem;
+      font-size: 0.9rem;
+      display: none;
+    }
+    .error-msg {
+      background: #ffe6e5;
+      color: #b13e3e;
+      padding: 10px;
+      border-radius: 1rem;
+      margin-bottom: 1rem;
+      font-size: 0.9rem;
+      display: none;
+    }
+
+    /* Reviews feed */
+    .reviews-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      flex-wrap: wrap;
+      margin-bottom: 1.5rem;
+    }
+    .review-item {
+      background: white;
+      border-radius: 1.4rem;
+      padding: 1.2rem 1.4rem;
+      margin-bottom: 1rem;
+      box-shadow: 0 5px 12px rgba(0,0,0,0.03);
+      border: 1px solid #eef2f8;
+      transition: 0.1s;
+    }
+    .review-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-bottom: 8px;
+    }
+    .reviewer-name {
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: #111;
+    }
+    .review-stars i {
+      color: #f5b042;
+      font-size: 0.85rem;
+      letter-spacing: 1px;
+    }
+    .review-date {
+      font-size: 0.7rem;
+      color: #7f8c9a;
+    }
+    .review-comment {
+      margin: 10px 0 6px;
+      color: #2c3e3f;
+      line-height: 1.4;
+    }
+    .admin-actions {
+      margin-top: 12px;
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+    }
+    .edit-mode {
+      background: #fff7e8;
+      border-left: 4px solid #f5b042;
+    }
+    .inline-edit {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .inline-edit input, .inline-edit textarea {
+      background: #fffdf7;
+    }
+    .small-btn {
+      padding: 6px 14px;
+      font-size: 0.75rem;
+    }
+    .badge-admin {
+      background: #2c3e66;
+      color: white;
+      border-radius: 30px;
+      padding: 2px 10px;
+      font-size: 0.7rem;
+      font-weight: 500;
+    }
+    footer {
+      text-align: center;
+      margin-top: 3rem;
+      color: #6c7f99;
+      font-size: 0.8rem;
+    }
+    @media (max-width: 780px) {
+      body { padding: 1rem; }
+      .submit-card, .reviews-list-card { padding: 1.2rem; }
+    }
+  </style>
+</head>
+<body>
+<div class="dashboard-container">
+  <div class="page-header">
+    <h1><i class="fas fa-star-of-life"></i> Customer Review Hub</h1>
+    <p>Share your experience • Admin can edit any review • Email delivery to admin</p>
+  </div>
+
+  <div class="review-grid">
+    <!-- LEFT: Submit new review + EmailJS notification + admin status -->
+    <div class="submit-card">
+      <h3><i class="fas fa-pen-fancy"></i> Write a Review</h3>
+      <div id="formStatus" class="success-msg"></div>
+      <div id="formError" class="error-msg"></div>
+      <form id="reviewForm">
+        <div class="form-group">
+          <label><i class="fas fa-user"></i> Your Name</label>
+          <input type="text" id="reviewerName" placeholder="e.g., Alex Johnson" required>
+        </div>
+        <div class="form-group">
+          <label><i class="fas fa-star"></i> Rating</label>
+          <div class="rating-stars" id="starRatingWidget">
+            <i class="far fa-star star" data-value="1"></i>
+            <i class="far fa-star star" data-value="2"></i>
+            <i class="far fa-star star" data-value="3"></i>
+            <i class="far fa-star star" data-value="4"></i>
+            <i class="far fa-star star" data-value="5"></i>
+          </div>
+          <input type="hidden" id="ratingValue" value="0">
+        </div>
+        <div class="form-group">
+          <label><i class="fas fa-comment-dots"></i> Review Message</label>
+          <textarea id="reviewText" placeholder="Tell us about your experience..." required></textarea>
+        </div>
+        <button type="submit" id="submitBtn"><i class="fas fa-paper-plane"></i> Submit Review & Send Email</button>
+      </form>
+
+      <!-- Admin zone: just info about editing permissions -->
+      <div class="admin-zone">
+        <button type="button" class="admin-toggle" id="adminToggleInfo"><i class="fas fa-user-shield"></i> Admin Panel: Edit any review</button>
+        <p style="font-size:0.75rem; margin-top:12px; color:#5f7f9e;"><i class="fas fa-envelope"></i> On each new review, an email will be sent to admin with full review history (all reviews). Admin can edit reviews directly from the list (click Edit).</p>
+      </div>
+    </div>
+
+    <!-- RIGHT: Reviews feed with admin edit controls -->
+    <div class="reviews-list-card">
+      <div class="reviews-header">
+        <h3><i class="fas fa-list-ul"></i> Customer Reviews</h3>
+        <span id="reviewCountBadge" style="background:#e4ebf5; padding:4px 12px; border-radius:40px;">0 reviews</span>
+      </div>
+      <div id="reviewsContainer">
+        <div style="text-align:center; padding: 30px 0; color:#98aec5;">Loading reviews...</div>
+      </div>
+    </div>
+  </div>
+  <footer>
+    <i class="fas fa-edit"></i> Admin can click "Edit" on any review → modify name/rating/comment → save. Updates instantly & review history remains updated.
+  </footer>
+</div>
+
+<script>
+  // ---------- CONFIGURATION ----------
+  // 🔁 REPLACE WITH YOUR ACTUAL EmailJS PUBLIC KEY & SERVICE/TEMPLATE IDs
+  // For demo, we use placeholder but code is ready. To make it functional:
+  // 1. Sign up at emailjs.com
+  // 2. Create service (Gmail, etc) and get Service ID
+  // 3. Create template with variables: {{all_reviews_html}}, {{new_reviewer}}, {{new_rating}}, {{new_comment}}
+  // 4. Replace below values.
+  const EMAILJS_CONFIG = {
+    publicKey: "YOUR_EMAILJS_PUBLIC_KEY",    // replace after registering
+    serviceID: "YOUR_SERVICE_ID",
+    templateID: "YOUR_TEMPLATE_ID"
+  };
+  
+  // Initialize EmailJS only if valid public key placeholder changed (to avoid errors)
+  if (EMAILJS_CONFIG.publicKey !== "YOUR_EMAILJS_PUBLIC_KEY" && EMAILJS_CONFIG.publicKey.length > 5) {
+    emailjs.init(EMAILJS_CONFIG.publicKey);
+    console.log("EmailJS initialized");
+  } else {
+    console.warn("EmailJS not configured. Please replace YOUR_EMAILJS_PUBLIC_KEY etc to enable email sending. Feature will simulate email in console.");
+  }
+
+  // ---------- STORAGE ----------
+  let reviews = [];     // array of objects: { id, name, rating, comment, date }
+
+  // Helper: Load from localStorage
+  function loadReviewsFromStorage() {
+    const stored = localStorage.getItem("smart_reviews_data");
+    if (stored) {
+      reviews = JSON.parse(stored);
+    } else {
+      // Default demo reviews
+      reviews = [
+        { id: "rev1", name: "Emma Watson", rating: 5, comment: "Absolutely fantastic platform! Very intuitive and clean.", date: new Date(Date.now() - 86400000 * 2).toISOString() },
+        { id: "rev2", name: "James Carter", rating: 4, comment: "Great service, minor improvements could make it perfect.", date: new Date(Date.now() - 86400000).toISOString() },
+        { id: "rev3", name: "Lina Zhang", rating: 5, comment: "Love the review system! Admin editing works perfectly.", date: new Date().toISOString() }
+      ];
+      saveReviewsToStorage();
+    }
+    renderReviewsList();
+  }
+
+  function saveReviewsToStorage() {
+    localStorage.setItem("smart_reviews_data", JSON.stringify(reviews));
+  }
+
+  // Helper: Generate short unique ID
+  function generateId() {
+    return Date.now().toString(36) + Math.random().toString(36).substring(2, 6);
+  }
+
+  // Add new review
+  function addReview(name, rating, comment) {
+    const newReview = {
+      id: generateId(),
+      name: name.trim(),
+      rating: parseInt(rating),
+      comment: comment.trim(),
+      date: new Date().toISOString()
+    };
+    reviews.unshift(newReview); // newest first
+    saveReviewsToStorage();
+    renderReviewsList();
+    return newReview;
+  }
+
+  // Update existing review by id
+  function updateReviewById(id, updatedData) {
+    const index = reviews.findIndex(r => r.id === id);
+    if (index !== -1) {
+      reviews[index] = { ...reviews[index], ...updatedData, date: new Date().toISOString() }; // refresh date on edit
+      saveReviewsToStorage();
+      renderReviewsList();
+      return true;
+    }
+    return false;
+  }
+
+  // ---------- EMAIL SEND (full review history + new review info) ----------
+  async function sendEmailNotification(newReviewData) {
+    // Build HTML table / string of all reviews for admin
+    const allReviewsHTML = buildReviewsHTMLForEmail();
+    const newReviewDetails = `
+      <strong>📢 New review submitted:</strong><br/>
+      👤 Name: ${escapeHtml(newReviewData.name)}<br/>
+      ⭐ Rating: ${newReviewData.rating}/5<br/>
+      💬 Comment: ${escapeHtml(newReviewData.comment)}<br/>
+      🕒 Time: ${new Date().toLocaleString()}
+    `;
+
+    // Prepare email params
+    const templateParams = {
+      to_email: "admin@yourwebsite.com",   // you can change to your actual email address
+      new_reviewer: newReviewData.name,
+      new_rating: newReviewData.rating,
+      new_comment: newReviewData.comment,
+      all_reviews_html: allReviewsHTML,
+      review_history_count: reviews.length,
+      subject: `New Review from ${newReviewData.name} | Review Dashboard`
+    };
+
+    // Check if EmailJS configured properly
+    if (EMAILJS_CONFIG.publicKey === "YOUR_EMAILJS_PUBLIC_KEY" || EMAILJS_CONFIG.serviceID === "YOUR_SERVICE_ID") {
+      console.log("📧 EmailJS not configured. Admin email would send with following data:", templateParams);
+      console.log("--- Email preview (Review History) ---");
+      console.log(allReviewsHTML);
+      return false;
+    }
+
+    try {
+      const response = await emailjs.send(EMAILJS_CONFIG.serviceID, EMAILJS_CONFIG.templateID, templateParams);
+      console.log("Email sent successfully!", response);
+      return true;
+    } catch (error) {
+      console.error("EmailJS Error:", error);
+      return false;
+    }
+  }
+
+  // Build simple HTML list for email body
+  function buildReviewsHTMLForEmail() {
+    if (!reviews.length) return "<p>No reviews yet.</p>";
+    let html = "<ul style='font-family: sans-serif;'>";
+    reviews.slice(0, 15).forEach(rev => {
+      html += `<li><strong>${escapeHtml(rev.name)}</strong> (${rev.rating}⭐) - ${new Date(rev.date).toLocaleString()}<br/>${escapeHtml(rev.comment)}</li>`;
+    });
+    html += "</ul>";
+    return html;
+  }
+
+  function escapeHtml(str) {
+    if (!str) return "";
+    return str.replace(/[&<>]/g, function(m) {
+      if (m === '&') return '&amp;';
+      if (m === '<') return '&lt;';
+      if (m === '>') return '&gt;';
+      return m;
+    }).replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, function(c) {
+      return c;
+    });
+  }
+
+  // ---------- RENDER REVIEWS (with Admin Edit Controls) ----------
+  function renderReviewsList() {
+    const container = document.getElementById('reviewsContainer');
+    const badge = document.getElementById('reviewCountBadge');
+    if (!container) return;
+    if (reviews.length === 0) {
+      container.innerHTML = `<div style="text-align:center; padding: 30px; background:#fafcfd; border-radius: 1.5rem;">✨ No reviews yet. Be the first to review!</div>`;
+      badge.innerText = "0 reviews";
+      return;
+    }
+    badge.innerText = `${reviews.length} review${reviews.length !== 1 ? 's' : ''}`;
+    container.innerHTML = "";
+    reviews.forEach(review => {
+      const reviewDiv = document.createElement('div');
+      reviewDiv.className = 'review-item';
+      reviewDiv.setAttribute('data-id', review.id);
+      const isEditing = review._editing || false;  // internal flag if needed, but we use inline editing state via local UI
+
+      // Render normal or edit mode? We'll use separate edit mode handled by buttons.
+      // Default view mode:
+      reviewDiv.innerHTML = `
+        <div class="review-header">
+          <span class="reviewer-name"><i class="fas fa-user-circle"></i> ${escapeHtml(review.name)}</span>
+          <div class="review-stars">${renderStars(review.rating)}</div>
+          <div class="review-date">${new Date(review.date).toLocaleDateString()}</div>
+        </div>
+        <div class="review-comment">${escapeHtml(review.comment)}</div>
+        <div class="admin-actions">
+          <button class="edit-review-btn small-btn" data-id="${review.id}"><i class="fas fa-edit"></i> Edit</button>
+        </div>
+      `;
+      container.appendChild(reviewDiv);
+    });
+
+    // Attach edit event listeners for each review (dynamic)
+    document.querySelectorAll('.edit-review-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const id = btn.getAttribute('data-id');
+        enableEditMode(id);
+      });
+    });
+  }
+
+  // Helper: star render
+  function renderStars(rating) {
+    let starsHtml = '';
+    for (let i = 1; i <= 5; i++) {
+      starsHtml += i <= rating ? '<i class="fas fa-star"></i>' : '<i class="far fa-star"></i>';
+    }
+    return starsHtml;
+  }
+
+  // Enable inline edit mode for a specific review
+  function enableEditMode(reviewId) {
+    const reviewItem = document.querySelector(`.review-item[data-id="${reviewId}"]`);
+    if (!reviewItem) return;
+    const review = reviews.find(r => r.id === reviewId);
+    if (!review) return;
+
+    // Replace content with edit form
+    reviewItem.classList.add('edit-mode');
+    reviewItem.innerHTML = `
+      <div class="inline-edit">
+        <label><i class="fas fa-user"></i> Name:</label>
+        <input type="text" id="edit-name-${reviewId}" value="${escapeHtml(review.name)}">
+        <label><i class="fas fa-star"></i> Rating (1-5):</label>
+        <select id="edit-rating-${reviewId}">
+          ${[1,2,3,4,5].map(star => `<option value="${star}" ${review.rating === star ? 'selected' : ''}>${star} star${star !== 1 ? 's' : ''}</option>`).join('')}
+        </select>
+        <label><i class="fas fa-comment"></i> Comment:</label>
+        <textarea id="edit-comment-${reviewId}" rows="2">${escapeHtml(review.comment)}</textarea>
+        <div style="display:flex; gap:10px; justify-content:flex-end; margin-top: 6px;">
+          <button class="save-edit-btn small-btn" data-id="${reviewId}"><i class="fas fa-save"></i> Save Changes</button>
+          <button class="cancel-edit-btn small-btn btn-secondary" data-id="${reviewId}"><i class="fas fa-times"></i> Cancel</button>
+        </div>
+      </div>
+    `;
+    // Attach save & cancel
+    reviewItem.querySelector('.save-edit-btn').addEventListener('click', (e) => {
+      const newName = document.getElementById(`edit-name-${reviewId}`).value.trim();
+      const newRating = parseInt(document.getElementById(`edit-rating-${reviewId}`).value);
+      const newComment = document.getElementById(`edit-comment-${reviewId}`).value.trim();
+      if (!newName || !newComment) {
+        alert("Name and comment cannot be empty.");
+        return;
+      }
+      if (newRating < 1 || newRating > 5) return;
+      updateReviewById(reviewId, { name: newName, rating: newRating, comment: newComment });
+    });
+    reviewItem.querySelector('.cancel-edit-btn').addEventListener('click', () => {
+      renderReviewsList(); // reset view
+    });
+  }
+
+  // Star rating widget logic
+  function initStarWidget() {
+    const stars = document.querySelectorAll('#starRatingWidget .star');
+    const ratingInput = document.getElementById('ratingValue');
+    stars.forEach(star => {
+      star.addEventListener('mouseover', function() {
+        const val = parseInt(this.getAttribute('data-value'));
+        highlightStars(val, 'hover');
+      });
+      star.addEventListener('mouseout', function() {
+        const current = parseInt(ratingInput.value) || 0;
+        highlightStars(current, 'active');
+      });
+      star.addEventListener('click', function() {
+        const val = parseInt(this.getAttribute('data-value'));
+        ratingInput.value = val;
+        highlightStars(val, 'active');
+      });
+    });
+    function highlightStars(value, mode) {
+      stars.forEach((s, idx) => {
+        const starVal = parseInt(s.getAttribute('data-value'));
+        if (starVal <= value) {
+          s.classList.remove('far');
+          s.classList.add('fas');
+          s.classList.add('active');
+        } else {
+          s.classList.remove('fas');
+          s.classList.add('far');
+          s.classList.remove('active');
+        }
+      });
+    }
+    // default set if any
+    if (ratingInput.value && parseInt(ratingInput.value) > 0) highlightStars(parseInt(ratingInput.value), 'active');
+  }
+
+  // form submission
+  const form = document.getElementById('reviewForm');
+  const statusDiv = document.getElementById('formStatus');
+  const errorDiv = document.getElementById('formError');
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const name = document.getElementById('reviewerName').value.trim();
+    const rating = parseInt(document.getElementById('ratingValue').value);
+    const comment = document.getElementById('reviewText').value.trim();
+    if (!name) { showError("Please enter your name."); return; }
+    if (!rating || rating < 1) { showError("Please select a star rating."); return; }
+    if (!comment) { showError("Please write a review comment."); return; }
+
+    const newReviewObj = addReview(name, rating, comment);
+    // reset form
+    document.getElementById('reviewerName').value = '';
+    document.getElementById('reviewText').value = '';
+    document.getElementById('ratingValue').value = '0';
+    const stars = document.querySelectorAll('#starRatingWidget .star');
+    stars.forEach(s => {
+      s.classList.remove('fas', 'active');
+      s.classList.add('far');
+    });
+    showSuccess("Review submitted successfully!");
+    // send email with updated history + new review
+    await sendEmailNotification(newReviewObj);
+    setTimeout(() => { statusDiv.style.display = 'none'; errorDiv.style.display = 'none'; }, 3000);
+  });
+
+  function showSuccess(msg) {
+    statusDiv.innerText = msg;
+    statusDiv.style.display = 'block';
+    errorDiv.style.display = 'none';
+  }
+  function showError(msg) {
+    errorDiv.innerText = msg;
+    errorDiv.style.display = 'block';
+    statusDiv.style.display = 'none';
+  }
+
+  // admin toggle info just for fun
+  document.getElementById('adminToggleInfo')?.addEventListener('click', () => {
+    alert("🔐 Admin editing: Click 'Edit' below any review, modify the name, rating or comment, then save. Changes appear instantly. EmailJS will send notifications on each new review including full history.");
+  });
+
+  // initial load
+  loadReviewsFromStorage();
+  initStarWidget();
+</script>
+</body>
+</html>
 </body>
 </body>
 </html>
