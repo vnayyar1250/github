@@ -1,1 +1,671 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Velora | Timeless Clothing House</title>
+    <!-- Google Fonts & simple CSS reset -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #ffffff;
+            color: #1a1a1a;
+            line-height: 1.4;
+            scroll-behavior: smooth;
+        }
+
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        /* header / navigation */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 24px 0;
+            flex-wrap: wrap;
+            border-bottom: 1px solid #eaeaea;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            text-decoration: none;
+            color: #1a1a1a;
+        }
+
+        .logo span {
+            font-weight: 300;
+            color: #7c5e3a;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            font-weight: 500;
+            color: #2c2c2c;
+            transition: color 0.2s;
+            font-size: 0.95rem;
+        }
+
+        .nav-links a:hover {
+            color: #9b7b54;
+        }
+
+        /* hero section */
+        .hero {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 2rem;
+            padding: 60px 0 40px;
+        }
+
+        .hero-content {
+            flex: 1;
+            min-width: 260px;
+        }
+
+        .hero-badge {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            color: #9b7b54;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .hero-content h1 {
+            font-size: 3.3rem;
+            font-weight: 600;
+            line-height: 1.2;
+            margin-bottom: 1rem;
+            letter-spacing: -0.02em;
+        }
+
+        .hero-content p {
+            font-size: 1rem;
+            color: #4a4a4a;
+            margin-bottom: 2rem;
+            max-width: 440px;
+            line-height: 1.5;
+        }
+
+        .btn {
+            display: inline-block;
+            background-color: #1a1a1a;
+            color: white;
+            padding: 12px 32px;
+            font-weight: 500;
+            text-decoration: none;
+            border-radius: 40px;
+            transition: all 0.25s ease;
+            border: 1px solid #1a1a1a;
+            font-size: 0.9rem;
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: #1a1a1a;
+            border: 1px solid #1a1a1a;
+            margin-left: 12px;
+        }
+
+        .btn-outline:hover {
+            background: #1a1a1a;
+            color: white;
+        }
+
+        .btn:hover {
+            background: #3a2c1f;
+            border-color: #3a2c1f;
+            transform: translateY(-2px);
+        }
+
+        .hero-image {
+            flex: 1;
+            background: #f4efe7;
+            border-radius: 32px;
+            min-height: 380px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .hero-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            border-radius: 32px;
+        }
+
+        .placeholder-img {
+            font-size: 1rem;
+            color: #a3927a;
+            text-align: center;
+            background: #e6dfd5;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 500;
+        }
+
+        /* categories */
+        .section {
+            padding: 70px 0;
+        }
+
+        .section-title {
+            font-size: 2rem;
+            font-weight: 600;
+            margin-bottom: 2.5rem;
+            letter-spacing: -0.01em;
+            text-align: center;
+        }
+
+        .categories-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+        }
+
+        .category-card {
+            text-align: center;
+            transition: transform 0.2s;
+        }
+
+        .category-card:hover {
+            transform: translateY(-6px);
+        }
+
+        .category-img {
+            background: #f8f5f0;
+            border-radius: 24px;
+            padding: 2rem 1rem;
+            margin-bottom: 1rem;
+            aspect-ratio: 1 / 0.9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            font-weight: 300;
+            color: #5c4832;
+        }
+
+        .category-card h3 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 0.3rem;
+        }
+
+        .category-card p {
+            color: #6b5a48;
+            font-size: 0.85rem;
+        }
+
+        /* featured products */
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 2rem;
+            margin-top: 1rem;
+        }
+
+        .product-card {
+            background: #ffffff;
+            border-radius: 24px;
+            overflow: hidden;
+            transition: box-shadow 0.25s, transform 0.2s;
+            border: 1px solid #f0ebe4;
+        }
+
+        .product-card:hover {
+            box-shadow: 0 18px 30px -12px rgba(0, 0, 0, 0.08);
+            transform: translateY(-4px);
+        }
+
+        .product-img {
+            background-color: #f2ede6;
+            height: 280px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            color: #ae9a80;
+            font-weight: 500;
+        }
+
+        .product-info {
+            padding: 1.2rem;
+        }
+
+        .product-title {
+            font-weight: 600;
+            font-size: 1.05rem;
+            margin-bottom: 0.3rem;
+        }
+
+        .product-price {
+            color: #9b7b54;
+            font-weight: 600;
+            margin-top: 0.4rem;
+        }
+
+        /* about / values */
+        .about-section {
+            background-color: #fbf9f6;
+            border-radius: 48px;
+            margin: 20px 0 40px;
+            padding: 48px 40px;
+            text-align: center;
+        }
+
+        .about-section h2 {
+            font-size: 1.9rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .about-section p {
+            max-width: 700px;
+            margin: 0 auto 1.8rem;
+            color: #3d352a;
+            line-height: 1.5;
+        }
+
+        .values {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 2.5rem;
+            margin-top: 2rem;
+        }
+
+        .value-item {
+            text-align: center;
+            max-width: 180px;
+        }
+
+        .value-icon {
+            font-size: 2rem;
+            margin-bottom: 0.7rem;
+        }
+
+        /* newsletter */
+        .newsletter {
+            background: #1e1915;
+            color: #f0e9df;
+            border-radius: 32px;
+            padding: 56px 40px;
+            text-align: center;
+            margin: 40px 0;
+        }
+
+        .newsletter h3 {
+            font-size: 1.8rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .newsletter p {
+            margin-bottom: 2rem;
+            opacity: 0.8;
+        }
+
+        .news-form {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 12px;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .news-form input {
+            flex: 1;
+            padding: 14px 20px;
+            border-radius: 60px;
+            border: none;
+            font-family: inherit;
+            font-size: 0.9rem;
+            background: #fff;
+            color: #111;
+            outline: none;
+        }
+
+        .news-form button {
+            background: #c6a27a;
+            border: none;
+            padding: 14px 30px;
+            border-radius: 60px;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            transition: 0.2s;
+            color: #1e1915;
+        }
+
+        .news-form button:hover {
+            background: #ddbb97;
+            transform: scale(0.97);
+        }
+
+        /* footer */
+        footer {
+            padding: 48px 0 40px;
+            border-top: 1px solid #ece5dc;
+            margin-top: 20px;
+        }
+
+        .footer-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .footer-col p {
+            color: #5a4a38;
+            margin-top: 0.8rem;
+            font-size: 0.85rem;
+            line-height: 1.4;
+        }
+
+        .footer-col h4 {
+            font-weight: 600;
+            margin-bottom: 1rem;
+            font-size: 1rem;
+        }
+
+        .footer-col ul {
+            list-style: none;
+        }
+
+        .footer-col li {
+            margin-bottom: 0.5rem;
+        }
+
+        .footer-col a {
+            text-decoration: none;
+            color: #5a4a38;
+            font-size: 0.85rem;
+            transition: color 0.2s;
+        }
+
+        .footer-col a:hover {
+            color: #9b7b54;
+        }
+
+        .copyright {
+            text-align: center;
+            font-size: 0.8rem;
+            color: #8f7e68;
+            padding-top: 2rem;
+            border-top: 1px solid #ece5dc;
+        }
+
+        @media (max-width: 768px) {
+            .navbar {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            .hero {
+                flex-direction: column-reverse;
+                text-align: center;
+            }
+            .hero-content p {
+                margin-left: auto;
+                margin-right: auto;
+            }
+            .hero-content h1 {
+                font-size: 2.3rem;
+            }
+            .section-title {
+                font-size: 1.7rem;
+            }
+            .about-section {
+                padding: 32px 20px;
+            }
+            .newsletter {
+                padding: 40px 20px;
+            }
+            .btn-outline {
+                margin-left: 0;
+                margin-top: 12px;
+            }
+            .hero-buttons {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<main>
+    <div class="container">
+        <!-- Navigation -->
+        <nav class="navbar">
+            <a href="#" class="logo">VELORA<span> house</span></a>
+            <ul class="nav-links">
+                <li><a href="#">Home</a></li>
+                <li><a href="#">Shop</a></li>
+                <li><a href="#">New Arrivals</a></li>
+                <li><a href="#">Collections</a></li>
+                <li><a href="#">Journal</a></li>
+            </ul>
+        </nav>
+
+        <!-- Hero -->
+        <div class="hero">
+            <div class="hero-content">
+                <div class="hero-badge">EST. 2025 — TIMELESS</div>
+                <h1>Where fabric meets <br> character & comfort</h1>
+                <p>Discover refined essentials, modern silhouettes, and everyday luxury. Crafted for the conscious soul.</p>
+                <div class="hero-buttons">
+                    <a href="#" class="btn">Shop collection</a>
+                    <a href="#" class="btn btn-outline">Explore lookbook</a>
+                </div>
+            </div>
+            <div class="hero-image">
+                <!-- elegant fashion hero visual (modern abstract clothing representation) -->
+                <img src="https://placehold.co/800x600/f4efe7/a3927a?text=VELORA+STUDIO" alt="Fashion editorial" style="width:100%; height:100%; object-fit:cover;">
+            </div>
+        </div>
+
+        <!-- categories -->
+        <section class="section">
+            <h2 class="section-title">Shop by category</h2>
+            <div class="categories-grid">
+                <div class="category-card">
+                    <div class="category-img">👕</div>
+                    <h3>Essentials</h3>
+                    <p>Organic cotton, linen</p>
+                </div>
+                <div class="category-card">
+                    <div class="category-img">🧥</div>
+                    <h3>Outerwear</h3>
+                    <p>Wool & recycled blends</p>
+                </div>
+                <div class="category-card">
+                    <div class="category-img">👗</div>
+                    <h3>Dresses</h3>
+                    <p>Minimal & fluid</p>
+                </div>
+                <div class="category-card">
+                    <div class="category-img">👖</div>
+                    <h3>Tailoring</h3>
+                    <p>Clean cuts, modern fit</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- featured products -->
+        <section class="section" style="padding-top: 0;">
+            <h2 class="section-title">Bestsellers</h2>
+            <div class="products-grid">
+                <div class="product-card">
+                    <div class="product-img">⟡ Merino Crewneck</div>
+                    <div class="product-info">
+                        <div class="product-title">Fine Merino Sweater</div>
+                        <div class="product-price">$128</div>
+                    </div>
+                </div>
+                <div class="product-card">
+                    <div class="product-img">⟡ Linen Blend Shirt</div>
+                    <div class="product-info">
+                        <div class="product-title">Relaxed Linen Shirt</div>
+                        <div class="product-price">$94</div>
+                    </div>
+                </div>
+                <div class="product-card">
+                    <div class="product-img">⟡ Pleated Trousers</div>
+                    <div class="product-info">
+                        <div class="product-title">Wool Pleated Pants</div>
+                        <div class="product-price">$159</div>
+                    </div>
+                </div>
+                <div class="product-card">
+                    <div class="product-img">⟡ Oversized Blazer</div>
+                    <div class="product-info">
+                        <div class="product-title">Signature Blazer</div>
+                        <div class="product-price">$219</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- about values / ethos -->
+        <div class="about-section">
+            <h2>Slow fashion, intentional living</h2>
+            <p>Velora House celebrates garments that last — crafted with natural fibers, ethical partners, and a dedication to timeless design. Each piece is an invitation to dress with authenticity.</p>
+            <div class="values">
+                <div class="value-item">
+                    <div class="value-icon">🌿</div>
+                    <h4>Sustainable</h4>
+                    <p style="font-size:0.75rem;">Eco-conscious materials</p>
+                </div>
+                <div class="value-item">
+                    <div class="value-icon">🤝</div>
+                    <h4>Ethical</h4>
+                    <p style="font-size:0.75rem;">Responsible production</p>
+                </div>
+                <div class="value-item">
+                    <div class="value-icon">✂️</div>
+                    <h4>Artisan</h4>
+                    <p style="font-size:0.75rem;">Detail-driven quality</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- newsletter subscription -->
+        <div class="newsletter">
+            <h3>Join the house</h3>
+            <p>Receive 10% off your first order + weekly style notes.</p>
+            <form class="news-form" id="subscribeForm">
+                <input type="email" placeholder="Your email address" required id="subEmail">
+                <button type="submit">Subscribe</button>
+            </form>
+            <p style="font-size: 0.7rem; margin-top: 1rem; opacity:0.7;">No spam, only timeless inspiration.</p>
+        </div>
+    </div>
+
+    <!-- footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-col">
+                    <h4>Velora House</h4>
+                    <p>Modern clothing house rooted in understated luxury & responsible design.</p>
+                </div>
+                <div class="footer-col">
+                    <h4>Explore</h4>
+                    <ul>
+                        <li><a href="#">New arrivals</a></li>
+                        <li><a href="#">Sale</a></li>
+                        <li><a href="#">Editorials</a></li>
+                        <li><a href="#">Stores</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Support</h4>
+                    <ul>
+                        <li><a href="#">Size guide</a></li>
+                        <li><a href="#">Returns</a></li>
+                        <li><a href="#">FAQ</a></li>
+                        <li><a href="#">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Connect</h4>
+                    <ul>
+                        <li><a href="#">Instagram</a></li>
+                        <li><a href="#">Pinterest</a></li>
+                        <li><a href="#">Newsletter</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="copyright">
+                © 2025 Velora Clothing House — all rights reserved. Crafted with intention.
+            </div>
+        </div>
+    </footer>
+</main>
+
+<!-- simple alert for newsletter demo (non-intrusive) -->
+<script>
+    (function() {
+        const form = document.getElementById('subscribeForm');
+        if(form) {
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const emailInput = document.getElementById('subEmail');
+                const email = emailInput.value.trim();
+                if(email && email.includes('@') && email.includes('.')) {
+                    alert(`✨ Thanks for joining Velora House! Check your inbox (${email}) for your welcome gift.`);
+                    emailInput.value = '';
+                } else {
+                    alert('Please enter a valid email address.');
+                }
+            });
+        }
+
+        // optional small hover effect on product demo (visual only)
+        const productImgs = document.querySelectorAll('.product-img');
+        productImgs.forEach(el => {
+            el.style.transition = 'background 0.2s';
+            el.addEventListener('mouseenter', () => {
+                el.style.background = '#e6dfd5';
+            });
+            el.addEventListener('mouseleave', () => {
+                el.style.background = '#f2ede6';
+            });
+        });
+    })();
+</script>
+</body>
+</html>
