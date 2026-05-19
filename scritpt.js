@@ -18,7 +18,7 @@ const chatbotKnowledge = {
   // Store information
   storeName: "Fashion Hut Garments",
   owner: "Raman Nayyar",
-  location: "Main Bazar, Near Old Sabzi Mandi, Garhshankar, Punjab - 144527",
+  location: "Main Bazar street 1 near elementary school , Garhshankar, Punjab - 144527",
   whatsapp: "+91 84371 72895",
   instagram: "@fash_ionvision",
   instagramUrl: "https://www.instagram.com/fash_ionvision",
@@ -42,7 +42,7 @@ const chatbotKnowledge = {
   // FAQs
   faqs: {
     "what products do you sell": "We offer Men's ethnic wear, Women's traditional wear (Sarees, Kurtis, Suits), Western wear, Wedding collection, Festive outfits, Cotton summer collection, and Winter layering clothes.",
-    "where is your store located": "Our store is located at Main Bazar, Near Old Sabzi Mandi, Garhshankar, Punjab - 144527.",
+    "where is your store located": "Our store is located at Main Bazar street 1 near elementary school , Garhshankar, Punjab - 144527.",
     "what are your business hours": "We are open Monday to Saturday from 10:00 AM to 8:00 PM. We remain closed on Sundays.",
     "who is the owner": "The owner and founder of Fashion Hut Garments is Mr. Raman Nayyar.",
     "how to contact": "You can contact us via WhatsApp at +91 84371 72895 or Instagram at @fash_ionvision.",
@@ -451,3 +451,9 @@ chatbotKnowledge.faqs["contact info"] = showContactCard();
 chatbotKnowledge.faqs["details"] = showContactCard();
 
 console.log("🤖 AI Chatbot initialized! Ask me about Fashion Hut Garments!");
+
+
+
+
+
+
