@@ -487,7 +487,7 @@
       primaryColor: "#c87e3a",
     };
     const knowledge = {
-      location: "Main Bazar, Near Old Sabzi Mandi, Garhshankar, Punjab - 144527",
+      location: "Main Bazar street 1 near elementary school , Garhshankar, Punjab - 144527",
       whatsapp: "+91 84371 72895",
       instagram: "@fash_ionvision",
       whatsappUrl: "https://wa.me/918437172895",
@@ -1310,7 +1310,7 @@ function addImageFromUrl(url) {
         
         const responses = {
             products: "We offer Men's ethnic wear, Women's traditional wear (Sarees, Kurtis, Suits), Western wear, Wedding collection, Festive outfits, Cotton summer collection!",
-            location: "Main Bazar, Near Old Sabzi Mandi, Garhshankar, Punjab - 144527",
+            location: "Main Bazar street 1 near elementary school , Garhshankar, Punjab - 144527",
             hours: "Monday to Saturday: 10:00 AM - 8:00 PM | Sunday: Closed",
             contact: "WhatsApp: +91 84371 72895 | Instagram: @fash_ionvision"
         };
