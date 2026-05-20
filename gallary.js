@@ -51,6 +51,22 @@
         font-size: 0.8rem;
         display: inline-block;
       }
+      .fh-gallery-loading {
+        background: #f0f0f0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 180px;
+        border-radius: 20px;
+      }
+      .fh-gallery-error {
+        background: #ffe6e6;
+        padding: 1rem;
+        border-radius: 20px;
+        color: #c00;
+        font-size: 0.9rem;
+        text-align: center;
+      }
     `;
     document.head.appendChild(style);
   }
@@ -94,7 +110,7 @@
   // Update counter and empty message
   function updateGallery(grid, counter) {
     if (!grid) return;
-    const cards = grid.querySelectorAll('.fh-gallery-card');
+    const cards = grid.querySelectorAll('.fh-gallery-card:not(.fh-gallery-error)');
     const total = cards.length;
     if (total === 0) {
       counter.textContent = '0 images';
@@ -111,41 +127,90 @@
     }
   }
 
+  // Validate and sanitize image URL
+  function isValidImageUrl(url) {
+    try {
+      const urlObj = new URL(url);
+      return /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(urlObj.pathname) || 
+             urlObj.hostname.includes('cloudinary') ||
+             urlObj.hostname.includes('imgur') ||
+             urlObj.hostname.includes('imgur.com');
+    } catch (e) {
+      return false;
+    }
+  }
+
   // Add a single image card
   function addImage(src, altText, grid, counter, save = false) {
-    if (!grid) return;
+    if (!grid || !src) return;
+
+    // Validate URL before adding
+    if (!isValidImageUrl(src)) {
+      console.warn('⚠️ Invalid image URL:', src);
+      return;
+    }
+
     const empty = grid.querySelector('.fh-gallery-empty');
     if (empty) empty.remove();
 
     const card = document.createElement('div');
     card.className = 'fh-gallery-card';
+    
     const img = document.createElement('img');
     img.src = src;
     img.alt = altText || 'Gallery image';
+    img.crossOrigin = 'anonymous'; // Enable CORS
+    
+    img.onload = () => {
+      card.classList.remove('fh-gallery-loading');
+      updateGallery(grid, counter);
+      console.log('✅ Image loaded:', src);
+    };
+    
     img.onerror = () => {
+      console.error('❌ Failed to load image:', src);
       card.remove();
       updateGallery(grid, counter);
     };
+    
     card.appendChild(img);
+    card.classList.add('fh-gallery-loading');
     grid.appendChild(card);
-    updateGallery(grid, counter);
-
-    // No remove button for public gallery
   }
 
   // Load all images from localStorage
   function loadImages(grid, counter) {
-    const images = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-    images.forEach(img => addImage(img.url, img.name, grid, counter, false));
+    try {
+      const storedData = localStorage.getItem(STORAGE_KEY);
+      const images = JSON.parse(storedData || '[]');
+      
+      if (!Array.isArray(images) || images.length === 0) {
+        console.log('ℹ️ No images found in localStorage');
+        return;
+      }
+      
+      console.log(`📸 Loading ${images.length} images...`);
+      images.forEach((img, index) => {
+        if (img && img.url) {
+          addImage(img.url, img.name || `Image ${index + 1}`, grid, counter, false);
+        }
+      });
+    } catch (error) {
+      console.error('❌ Error loading images from localStorage:', error);
+    }
   }
 
   // Initialise everything
   function init() {
-    injectStyles();
-    const container = getGalleryContainer();
-    const { grid, counter } = buildGallery(container);
-    loadImages(grid, counter);
-    console.log('✅ Gallery ready – sharing images from admin panel');
+    try {
+      injectStyles();
+      const container = getGalleryContainer();
+      const { grid, counter } = buildGallery(container);
+      loadImages(grid, counter);
+      console.log('✅ Gallery ready – sharing images from admin panel');
+    } catch (error) {
+      console.error('❌ Gallery initialization error:', error);
+    }
   }
 
   // Run when DOM is ready
